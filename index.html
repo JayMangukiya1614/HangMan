@@ -1,181 +1,121 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="bootstrap.css">
-    <link rel="stylesheet" href="Hangman.css">
+    <title>Geolocation</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
 
+    <!-- <link rel="stylesheet" type="text/css" href="./style.css" />
+    <script type="module" src="./index.js"></script> -->
+    <style>
+        /* 
+ * Always set the map height explicitly to define the size of the div element
+ * that contains the map. 
+ */
+        #map {
+            height: 500px;
+            width: 500px;
+        }
+
+        /* 
+    * Optional: Makes the sample page fill the window. 
+    */
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .custom-map-control-button {
+            background-color: #fff;
+            border: 0;
+            border-radius: 2px;
+            box-shadow: 0 1px 4px -1px rgba(0, 0, 0, 0.3);
+            margin: 10px;
+            padding: 0 0.5em;
+            font: 400 18px Roboto, Arial, sans-serif;
+            overflow: hidden;
+            height: 40px;
+            cursor: pointer;
+        }
+
+        .custom-map-control-button:hover {
+            background: rgb(235, 235, 235);
+        }
+    </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="row">
-            <div class="col-md-3"></div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header bg-dark text-light text-center">
-                        <h3>HANGMAN</h3>
-                        <p>Just for having fun.</p>
-                    </div>
-                    <div class="card-body ">
-                        <div class="text-right">
-                            <h4 id="score"></h4>
-                        </div>
-                        <div class="text-center">
+    <div id="map" ></div>
+    <button id="location" >Location</button>
+    <!-- 
+      The `defer` attribute causes the callback to execute after the full HTML
+      document has been parsed. For non-blocking uses, avoiding race conditions,
+      and consistent behavior across browsers, consider loading using Promises.
+      See https://developers.google.com/maps/documentation/javascript/load-maps-js-api
+      for more information.
+      -->
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&callback=initMap&v=weekly"
+        defer></script>
+    <script>
+        // Note: This example requires that you consent to location sharing when
+        // prompted by your browser. If you see the error "The Geolocation service
+        // failed.", it means you probably did not give permission for the browser to
+        // locate you.
+        let map, infoWindow;
 
-                            <h4 id="randomKey"></h4>
-                            <h1 id="randomValue" style="letter-spacing:1rem"></h1>
-                        </div>
-                        <div>
-                            <button type="button" class="btn btn-secondary float-right" data-dismiss="modal"
-                            onclick="location.reload();">Genrate New</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3"></div>
-        </div>
-        <!-- <div class="row mt-4">
-            <div class="col-md-3"></div>
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: -34.397, lng: 150.644 },
+                zoom: 6,
+            });
+            infoWindow = new google.maps.InfoWindow();
+            const locationButton = document.getElementById("location")
+            //const locationButton = document.createElement("button");
 
-            <div class="col-md-6">
-                <input type="text" class="form-control" id="inputGuess" onkeyup="checkValue(this)">
-            </div>
-            <div class="col-md-3"></div>
-        </div> -->
+            //locationButton.textContent = "Pan to Current Location";
+            //locationButton.classList.add("custom-map-control-button");
+            //map.controls[google.maps.ControlPosition.TOP_CENTER].push(locationButton);
+            locationButton.addEventListener("click", () => {
+                // Try HTML5 geolocation.
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const pos = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude,
+                            };
+                            console.log(pos['lat'],pos['lng'])
+                            alert(pos['lng'])
+                            infoWindow.setPosition(pos);
+                            infoWindow.setContent("Location found.");
+                            infoWindow.open(map);
+                            map.setCenter(pos);
+                        },
+                        () => {
+                            handleLocationError(true, infoWindow, map.getCenter());
+                        },
+                    );
+                } else {
+                    // Browser doesn't support Geolocation
+                    handleLocationError(false, infoWindow, map.getCenter());
+                }
+            });
+        }
 
-        <div class="modal" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Modal title</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <p>Game Over....</p>
-                    </div>
-                    <div class="modal-footer">
-                        <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal"
-                            onclick="location.reload();">Ok</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <table class="mt-5">
+        function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+            infoWindow.setPosition(pos);
+            infoWindow.setContent(
+                browserHasGeolocation
+                    ? "Error: The Geolocation service failed."
+                    : "Error: Your browser doesn't support geolocation.",
+            );
+            infoWindow.open(map);
+        }
 
-            <tr>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="Q" id="q">
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="W" id="w">
-
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="E" id="e">
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="R" id="r">
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="T" id="t">
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="Y" id="y">
-
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="U" id="u">
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="I" id="i">
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="O" id="o">
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="P" id="p">
-
-                </td>
-            </tr>
-        </table>
-        <table class="">
-            <tr class="pl-3">
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="A" id="a">
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="S" id="s">
-
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="D" id="d">
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="F" id="f">
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="G" id="g">
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="H" id="h">
-
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="J" id="j">
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="K" id="k">
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="L" id="l">
-                </td>
-
-            </tr>
-
-        </table>
-
-
-        <table class="">
-            <tr class="pl-3">
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="Z" id="z">
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="X" id="x">
-
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="C" id="c">
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="V" id="v">
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="B" id="b">
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="N" id="n">
-
-                </td>
-                <td>
-                    <input type="button" onclick="checkValue(this)" value="M" id="m" >
-                </td>
-            </tr>
-        </table>
-
-
-    </div>
-    <script src="jquery.js"></script>
-    <script src="bootstrapmin.js"></script>
-    <script src="propermin.js"></script>
-    <script src="index.js"></script>
+        window.initMap = initMap;
+    </script>
 </body>
 
 </html>
