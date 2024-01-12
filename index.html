@@ -46,8 +46,8 @@
 </head>
 
 <body>
-    <div id="map" ></div>
-    <button id="location" >Location</button>
+    <div id="map"></div>
+    <button id="location">Location</button>
     <!-- 
       The `defer` attribute causes the callback to execute after the full HTML
       document has been parsed. For non-blocking uses, avoiding race conditions,
@@ -86,8 +86,9 @@
                                 lat: position.coords.latitude,
                                 lng: position.coords.longitude,
                             };
-                            console.log(pos['lat'],pos['lng'])
-                            alert(toString(pos['lat']) +' ' + toString(pos['lng']))
+                            const posString = JSON.stringify(pos);
+
+                            alert(posString);
                             infoWindow.setPosition(pos);
                             infoWindow.setContent("Location found.");
                             infoWindow.open(map);
